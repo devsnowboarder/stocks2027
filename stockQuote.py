@@ -11,6 +11,7 @@ import numpy as np
 
 # ==========================================
 # 0. READ TICKERS FROM FILE
+# 1. Using AI to help me write this code
 # ==========================================
 print("Reading tickers from 'stocklist.txt'...")
 
