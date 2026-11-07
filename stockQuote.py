@@ -9,6 +9,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import numpy as np
 
+
 # ==========================================
 # 0. READ TICKERS FROM FILE
 # 1. Using AI to help me write this code
