@@ -7,6 +7,7 @@ import os
 from datetime import datetime
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import sys
 import numpy as np
 
 
@@ -14,10 +15,14 @@ import numpy as np
 # 0. READ TICKERS FROM FILE
 # 1. Using AI to help me write this code
 # ==========================================
-print("Reading tickers from 'stocklist.txt'...")
+if len(sys.argv) > 1:
+    filename = sys.argv[1]
+else:
+    filename = "stockfiles/michael.txt"
+
+print(f"Reading tickers from '{filename}'...")
 
 tickers = []
-filename = "stocklist.txt"
 
 if os.path.exists(filename):
     with open(filename, "r") as file:
@@ -565,7 +570,29 @@ final_html_document = f"""
 </html>
 """
 
-html_filename = "michaelResearch.html"
+# Strip the input extension (.txt, .csv, etc.) and append .html
+# ==========================================
+# 5. COMBINE EVERYTHING & SAVE
+# ==========================================
+
+# 1. Define output directory and ensure it exists
+output_dir = "stockHTML"
+os.makedirs(output_dir, exist_ok=True)
+
+# 2. Extract just the file name stem ('james')
+base_name = os.path.splitext(os.path.basename(filename))[0]
+
+# 3. Construct the full destination path: 'stockHTML/james.html'
+html_filename = os.path.join(output_dir, f"{base_name}.html")
+
+# 4. Write the file
+with open(html_filename, "w", encoding="utf-8") as f:
+    f.write(final_html_document)
+
+print(
+    f"\nDone! Open '{html_filename}' in your web browser. You can now click the column headers on the main summary table to instantly sort the data."
+)
+
 
 with open(html_filename, "w", encoding="utf-8") as f:
     f.write(final_html_document)
