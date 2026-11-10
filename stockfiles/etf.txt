@@ -1,10 +1,10 @@
-VOO   # Vanguard S&P 500 ETF ($1,072.24B AUM
-IVV
-SPY
-QQQ
-VTI
-VEA
-VUG
-VTV
-IEFA
-SPYM
+VOO  # Vanguard S&P 500 ETF ($1,072.24B AUM
+IVV  # iShares Core S&P 500 ETF ($888.69B AUM)
+SPY  #  — State Street SPDR S&P 500 ETF Trust ($813.14B AUM)
+QQQ  #  — Invesco QQQ Trust ($467.03B AUM)
+VTI  # — Vanguard Total Stock Market ETF ($699.73B AUM)
+VEA  #  — Vanguard FTSE Developed Markets ETF ($233.98B AUM)
+VUG  #  — Vanguard Growth ETF ($223.30B AUM)
+VTV  #  — Vanguard Value ETF ($198.88B AUM
+IEFA # — iShares Core MSCI EAFE ETF ($193.44B AUM )
+SPYM #  — State Street SPDR Portfolio S&P 500 ETF ($185.99B AUM)
