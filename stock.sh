@@ -41,9 +41,28 @@ echo "=========================================="
 echo "Uploading reports to fastsnowboarder.com..."
 echo "=========================================="
 
-if compgen -G "$OUTPUT_DIR/*.html" > /dev/null; then
-    scp "$OUTPUT_DIR"/*.html fastsnow@fastsnowboarder.com:~/public_html/stock_report/
-    echo "All HTML files from '$OUTPUT_DIR/' successfully uploaded."
-else
-    echo "Warning: No .html files found in '$OUTPUT_DIR/' to upload."
+MAX_RETRIES=3
+RETRY_DELAY=5
+COUNT=0
+SUCCESS=false
+
+while [ $COUNT -lt $MAX_RETRIES ]; do
+    rsync -avz --partial --timeout=30 \
+        -e "ssh -o BatchMode=yes -o ConnectTimeout=15 -o ServerAliveInterval=10 -o ServerAliveCountMax=3" \
+        stockHTML/*.html fastsnow@fastsnowboarder.com:~/public_html/stock_report/
+
+    if [ $? -eq 0 ]; then
+        SUCCESS=true
+        echo "Upload completed successfully."
+        break
+    fi
+
+    COUNT=$((COUNT + 1))
+    echo "Upload failed (attempt $COUNT of $MAX_RETRIES). Retrying in ${RETRY_DELAY}s..."
+    sleep $RETRY_DELAY
+done
+
+if [ "$SUCCESS" = false ]; then
+    echo "ERROR: Upload failed after $MAX_RETRIES attempts."
+    exit 1
 fi
