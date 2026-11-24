@@ -7,7 +7,13 @@ STOCKFILES_DIR="stockfiles"
 OUTPUT_DIR="stockHTML"
 
 # Activate Python virtual environment
-source .venv/bin/activate
+if [ -f "/Users/michaellau/python2026/Stock2027/stocks2027/.venv/bin/activate" ]; then
+    source /Users/michaellau/python2026/Stock2027/stocks2027/.venv/bin/activate
+elif [ -f "/Users/michaellau/python2026/Stock2027/stocks2027/venv/bin/activate" ]; then
+    source /Users/michaellau/python2026/Stock2027/stocks2027/venv/bin/activate
+elif [ -f "/Users/michaellau/python2026/.venv/bin/activate" ]; then
+    source /Users/michaellau/python2026/.venv/bin/activate
+fi
 
 # Verify the input directory exists
 if [ ! -d "$STOCKFILES_DIR" ]; then
