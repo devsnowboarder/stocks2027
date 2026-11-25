@@ -28,4 +28,5 @@ SCHD
 UMAC
 VGT
 VUG
+orcl
 
