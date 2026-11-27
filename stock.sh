@@ -1,44 +1,62 @@
 #!/bin/bash
+set -euo pipefail
 
-# Exit immediately if a command exits with a non-zero status
-set -e
+# Move to Jenkins workspace (or current directory when running locally)
+cd "${WORKSPACE:-$(pwd)}"
 
-STOCKFILES_DIR="stockfiles"
-OUTPUT_DIR="stockHTML"
-
-# Activate Python virtual environment
+echo "=========================================="
+echo "1. Setting up Python virtual environment"
+echo "=========================================="
+if [ ! -d ".venv" ]; then
+  python3 -m venv .venv
+fi
 source .venv/bin/activate
 
-# Verify the input directory exists
-if [ ! -d "$STOCKFILES_DIR" ]; then
-    echo "Error: Directory '$STOCKFILES_DIR' not found."
-    exit 1
+if [ -f "requirements.txt" ]; then
+  pip install --quiet --upgrade pip
+  pip install --quiet -r requirements.txt
+else
+  pip install --quiet yfinance pandas numpy plotly
 fi
 
-# Ensure output directory exists
-mkdir -p "$OUTPUT_DIR"
-
-# 1. Process all text files
 echo "=========================================="
-echo "Starting Stock Analysis Pipeline"
+echo "2. Running stock report scripts"
 echo "=========================================="
+python3 stockQuote.py
+# Add any additional scripts below if needed:
+# python3 dynamicFactor.py
 
+echo "=========================================="
+echo "3. Uploading reports to fastsnowboarder.com"
+echo "=========================================="
+LOG_FILE="upload.log"
+MAX_LOG_LINES=500
+REMOTE_DEST="fastsnow@fastsnowboarder.com:~/public_html/stock_report/"
+MAX_RETRIES=3
+RETRY_DELAY=15
 
-for file in "$STOCKFILES_DIR"/*.txt; do
-    [ -e "$file" ] || continue
+# Trim upload.log to the most recent 500 lines
+if [ -f "$LOG_FILE" ]; then
+  tail -n "$MAX_LOG_LINES" "$LOG_FILE" > "${LOG_FILE}.tmp" && mv "${LOG_FILE}.tmp" "$LOG_FILE"
+fi
 
-    echo "Running analysis for: $file"
-    python3 stockQuote.py "$file"
+echo "=== Upload started: $(date) ===" | tee -a "$LOG_FILE"
+
+for i in $(seq 1 "$MAX_RETRIES"); do
+  if rsync -avz --partial \
+    -e "ssh -o ConnectTimeout=15 -o ServerAliveInterval=30 -o ServerAliveCountMax=3" \
+    stockHTML/*.html "$REMOTE_DEST" 2>&1 | tee -a "$LOG_FILE"; then
+    echo "Upload succeeded on attempt $i: $(date)" | tee -a "$LOG_FILE"
+    break
+  fi
+
+  if [ "$i" -eq "$MAX_RETRIES" ]; then
+    echo "ERROR: Upload failed after $MAX_RETRIES attempts: $(date)" | tee -a "$LOG_FILE"
+    exit 1
+  fi
+
+  echo "Attempt $i/$MAX_RETRIES failed. Retrying in ${RETRY_DELAY}s..." | tee -a "$LOG_FILE"
+  sleep "$RETRY_DELAY"
 done
 
-# 2. Batch upload all HTML files from stockHTML
-echo "=========================================="
-echo "Uploading reports to fastsnowboarder.com..."
-echo "=========================================="
-
-if compgen -G "$OUTPUT_DIR/*.html" > /dev/null; then
-    scp "$OUTPUT_DIR"/*.html fastsnow@fastsnowboarder.com:~/public_html/stock_report/
-    echo "All HTML files from '$OUTPUT_DIR/' successfully uploaded."
-else
-    echo "Warning: No .html files found in '$OUTPUT_DIR/' to upload."
-fi
+echo "Done!"
