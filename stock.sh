@@ -23,6 +23,7 @@ echo "=========================================="
 echo "Starting Stock Analysis Pipeline"
 echo "=========================================="
 
+
 for file in "$STOCKFILES_DIR"/*.txt; do
     [ -e "$file" ] || continue
 
