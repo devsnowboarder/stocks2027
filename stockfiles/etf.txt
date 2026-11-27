@@ -8,4 +8,3 @@ VUG  #  — Vanguard Growth ETF ($223.30B AUM)
 VTV  #  — Vanguard Value ETF ($198.88B AUM
 IEFA # — iShares Core MSCI EAFE ETF ($193.44B AUM )
 SPYM #  — State Street SPDR Portfolio S&P 500 ETF($185.99B AUM)
-
