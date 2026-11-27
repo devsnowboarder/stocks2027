@@ -40,6 +40,7 @@ if [ -d "stockHTML" ]; then
     SOURCE_DIR="stockHTML/"
 fi
 
+
 if rsync -avz --include="*.html" --exclude="*" "$SOURCE_DIR" fastsnow@fastsnowboarder.com:~/public_html/stock_report/; then
     echo "Upload completed successfully to https://fastsnowboarder.com/stock_report/"
 else
