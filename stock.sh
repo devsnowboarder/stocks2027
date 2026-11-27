@@ -1,49 +1,43 @@
 #!/bin/bash
+
+# Exit immediately if a command exits with a non-zero status
 set -e
 
-echo "=========================================="
-echo "1. Setting up Python environment..."
-echo "=========================================="
-cd "$WORKSPACE"
+STOCKFILES_DIR="stockfiles"
+OUTPUT_DIR="stockHTML"
 
-if [ ! -d ".venv" ]; then
-    python3 -m venv .venv
-fi
-
+# Activate Python virtual environment
 source .venv/bin/activate
 
-if [ -f "requirements.txt" ]; then
-    pip install --upgrade pip
-    pip install -r requirements.txt
-else
-    pip install --upgrade pip yfinance pandas numpy plotly
-fi
-
-echo "=========================================="
-echo "2. Running stock report script..."
-echo "=========================================="
-if [ -f "stock.sh" ]; then
-    chmod +x stock.sh
-    ./stock.sh
-elif [ -f "stockQuote.py" ]; then
-    python3 stockQuote.py
-else
-    echo "Error: Neither stock.sh nor stockQuote.py found in $WORKSPACE"
+# Verify the input directory exists
+if [ ! -d "$STOCKFILES_DIR" ]; then
+    echo "Error: Directory '$STOCKFILES_DIR' not found."
     exit 1
 fi
 
-echo "=========================================="
-echo "3. Uploading reports to fastsnowboarder.com/stock_report/..."
-echo "=========================================="
-SOURCE_DIR="./"
-if [ -d "stockHTML" ]; then
-    SOURCE_DIR="stockHTML/"
-fi
+# Ensure output directory exists
+mkdir -p "$OUTPUT_DIR"
 
+# 1. Process all text files
+echo "=========================================="
+echo "Starting Stock Analysis Pipeline"
+echo "=========================================="
 
-if rsync -avz --include="*.html" --exclude="*" "$SOURCE_DIR" fastsnow@fastsnowboarder.com:~/public_html/stock_report/; then
-    echo "Upload completed successfully to https://fastsnowboarder.com/stock_report/"
+for file in "$STOCKFILES_DIR"/*.txt; do
+    [ -e "$file" ] || continue
+
+    echo "Running analysis for: $file"
+    python3 stockQuote.py "$file"
+done
+
+# 2. Batch upload all HTML files from stockHTML
+echo "=========================================="
+echo "Uploading reports to fastsnowboarder.com..."
+echo "=========================================="
+
+if compgen -G "$OUTPUT_DIR/*.html" > /dev/null; then
+    scp "$OUTPUT_DIR"/*.html fastsnow@fastsnowboarder.com:~/public_html/stock_report/
+    echo "All HTML files from '$OUTPUT_DIR/' successfully uploaded."
 else
-    echo "Upload failed!"
-    exit 1
+    echo "Warning: No .html files found in '$OUTPUT_DIR/' to upload."
 fi
